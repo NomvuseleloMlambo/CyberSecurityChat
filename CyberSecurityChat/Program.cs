@@ -7,17 +7,21 @@ namespace CyberSecurityChat
 {
     class Program
     {
+        // Stores last topic for follow up or reminders
         static string lastTopic = "";
+        //Keeps track of responses to previous
         static Dictionary<string, string> topicHistory = new Dictionary<string, string>();
+       //List of phishing tips 
         static List<string> phishingTips = new List<string>
         {
-            "Be cautious of emails asking for personal information.",
-    "Scammers often disguise themselves as trusted organizations.",
-    "Never click on suspicious links in emails or messages.",
-    "Always verify the sender's email address.",
-    "Look for grammar mistakes in suspicious emails."
+          "Be cautious of emails asking for personal information.",
+          "Scammers often disguise themselves as trusted organizations.",
+          "Never click on suspicious links in emails or messages.",
+          "Always verify the sender's email address.",
+          "Look for grammar mistakes in suspicious emails."
         };
 
+        
         static void Main(string[] args)
         {
             // Play the greeting at startup
@@ -26,6 +30,7 @@ namespace CyberSecurityChat
             // Display ASCII art logo
             ShowAsciiArt();
 
+            // Delay to allow audio to finish
             Thread.Sleep(11000);
 
             // Greet user and ask for name
@@ -38,6 +43,7 @@ namespace CyberSecurityChat
             Console.ReadKey();
         }
 
+        //Playing welcome audio file method
         static void PlayGreeting()
         {
             try
@@ -52,6 +58,7 @@ namespace CyberSecurityChat
             }
         }
 
+        // Displays ASCII art
         static void ShowAsciiArt()
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
@@ -69,6 +76,7 @@ namespace CyberSecurityChat
             Console.ResetColor();
         }
 
+        // Greets user function
         static string GreetUser()
         {
             Console.WriteLine("\nWhat's your name?");
@@ -90,6 +98,7 @@ namespace CyberSecurityChat
             return name;
         }
 
+        // Main chatbot loop for handling user input and responses
         static void StartChatbot(string userName)
         {
             while (true)
@@ -114,15 +123,17 @@ namespace CyberSecurityChat
                     break;
                 }
 
+                // Process user input
                 GetResponse(userInput);
             }
         }
 
+        // GetResponse method
         static void GetResponse(string userInput)
         {
             userInput = userInput.ToLower();
 
-            // Step 1: Sentiment Detection
+            // Detect user sentiment for empathetic response
             string sentiment = DetectSentiment(userInput);
 
             if (sentiment == "concern")
@@ -138,7 +149,7 @@ namespace CyberSecurityChat
                 TypeResponse("\nI get that this can be frustrating. Let’s take it one step at a time — I’m here to make it easier.");
             }
 
-            // Step 2: Memory and Follow-Up Check
+            // Memory and Follow-Up Check
             if (userInput.Contains("remind") || userInput.Contains("what did you say") || userInput.Contains("repeat") || userInput.Contains("again"))
             {
                 if (!string.IsNullOrEmpty(lastTopic) && topicHistory.ContainsKey(lastTopic))
@@ -152,7 +163,7 @@ namespace CyberSecurityChat
                 }
                 return;
             }
-
+            //predefined conversational responses
             if (userInput.Contains("how are you"))
             {
                 TypeResponse("\nI'm doing great, thank you! I'm always ready to help you stay safe online.");
@@ -171,6 +182,7 @@ namespace CyberSecurityChat
                 TypeResponse("- Common scams");
                 TypeResponse("- Social engineering");
             }
+            // if user wants more phishing tips function
             if (userInput.Contains("remind") || userInput.Contains("what did you say") || userInput.Contains("repeat") || userInput.Contains("again"))
             {
                 if (!string.IsNullOrEmpty(lastTopic) && topicHistory.ContainsKey(lastTopic))
@@ -200,7 +212,7 @@ namespace CyberSecurityChat
                 TypeResponse("\n" + tip);
                 topicHistory["phishing"] = tip;
             }
-
+            // Other topic responses
             else if (userInput.Contains("strong password") || userInput.Contains("create password") || userInput.Contains("password"))
             {
                 lastTopic = "password";
@@ -243,6 +255,7 @@ namespace CyberSecurityChat
                 TypeResponse(msg);
                 topicHistory["privacy"] = msg;
             }
+            // Fallback for unrecognised input
             else
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
@@ -250,6 +263,7 @@ namespace CyberSecurityChat
                 Console.ResetColor();
             }
         }
+        // Detects basic sentiment in the user's message
         static string DetectSentiment(string input)
         {
             input = input.ToLower();
@@ -263,6 +277,7 @@ namespace CyberSecurityChat
             else
                 return "neutral";
         }
+        // Types out the chatbot's message with a typewriter effect
         static void TypeResponse(string message, int delay = 25)
         {
             foreach (char c in message)
