@@ -49,6 +49,7 @@
   <ItemGroup>
     <None Include=".github\workflows\main.yml" />
     <None Include="App.config" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\greeting.wav">

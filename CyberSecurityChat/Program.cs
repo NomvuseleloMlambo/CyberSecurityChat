@@ -7,43 +7,49 @@ namespace CyberSecurityChat
 {
     class Program
     {
-        // Stores last topic for follow up or reminders
+        // Tracks the most recent topic the user asked about
         static string lastTopic = "";
-        //Keeps track of responses to previous
+
+        // Stores history of topic responses
         static Dictionary<string, string> topicHistory = new Dictionary<string, string>();
-       //List of phishing tips 
-        static List<string> phishingTips = new List<string>
+
+        // Stores static one-line responses for certain cybersecurity topics
+        static Dictionary<string, string> staticTopicResponses = new Dictionary<string, string>
         {
-          "Be cautious of emails asking for personal information.",
-          "Scammers often disguise themselves as trusted organizations.",
-          "Never click on suspicious links in emails or messages.",
-          "Always verify the sender's email address.",
-          "Look for grammar mistakes in suspicious emails."
+            { "password", "\nMake sure to use strong, unique passwords for each account. Avoid using personal info like your birthday." },
+            { "malware", "\nMalware is malicious software like viruses, spyware, or ransomware that can damage or steal your data." },
+            { "safe browsing", "\nSafe browsing means avoiding unknown websites, not clicking suspicious links, and using secure connections." },
+            { "social engineering", "\nSocial engineering is when someone tricks you into giving away confidential information by pretending to be someone you trust." },
+            { "scam", "\nWatch out for online scams. Never click on suspicious links or give out personal information to unverified sources." },
+            { "privacy", "\nProtect your privacy by adjusting security settings on social media and apps. Only share personal information when absolutely necessary." }
         };
 
-        
+        // Stores topics with multiple tips, randomly selected when asked
+        static Dictionary<string, List<string>> randomTopicResponses = new Dictionary<string, List<string>>
+        {
+            { "phishing", new List<string>
+                {
+                    "Be cautious of emails asking for personal information.",
+                    "Scammers often disguise themselves as trusted organizations.",
+                    "Never click on suspicious links in emails or messages.",
+                    "Always verify the sender's email address.",
+                    "Look for grammar mistakes in suspicious emails."
+                }
+            }
+        };
+
+        // Entry point of the application
         static void Main(string[] args)
         {
-            // Play the greeting at startup
-            PlayGreeting();
-
-            // Display ASCII art logo
-            ShowAsciiArt();
-
-            // Delay to allow audio to finish
-            Thread.Sleep(11000);
-
-            // Greet user and ask for name
-            string userName = GreetUser();
-
-            // Start chatbot
-            StartChatbot(userName);
-
+            PlayGreeting();      // Play startup audio
+            ShowAsciiArt();      // Show ASCII art banner
+            Thread.Sleep(11000); // Pause for 11 seconds
+            string userName = GreetUser(); // Ask for user name
+            StartChatbot(userName);        // Begin chatbot interaction
             Console.WriteLine("Press any key to exit...");
-            Console.ReadKey();
+            Console.ReadKey();             // Wait before closing
         }
-
-        //Playing welcome audio file method
+        // Plays a greeting sound if available
         static void PlayGreeting()
         {
             try
@@ -57,8 +63,7 @@ namespace CyberSecurityChat
                 Console.WriteLine("Audio error: " + ex.Message);
             }
         }
-
-        // Displays ASCII art
+        // Displays the CyberBot ASCII logo
         static void ShowAsciiArt()
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
@@ -75,8 +80,7 @@ namespace CyberSecurityChat
 ");
             Console.ResetColor();
         }
-
-        // Greets user function
+        // Greets the user and asks for their name
         static string GreetUser()
         {
             Console.WriteLine("\nWhat's your name?");
@@ -98,7 +102,7 @@ namespace CyberSecurityChat
             return name;
         }
 
-        // Main chatbot loop for handling user input and responses
+        // Main chatbot loop: takes user input, processes, and gives responses
         static void StartChatbot(string userName)
         {
             while (true)
@@ -109,166 +113,59 @@ namespace CyberSecurityChat
 
                 string userInput = Console.ReadLine()?.Trim();
 
-                // Handle empty or whitespace input
                 if (string.IsNullOrWhiteSpace(userInput))
                 {
                     TypeResponse("\nI didn’t catch that. Please type your question again.");
                     continue;
                 }
 
-                // Handle exit command
                 if (userInput.ToLower() == "exit")
                 {
-                    Console.WriteLine($"\nGoodbye, {userName}! Stay safe online. 👋");
+                    Console.WriteLine($"\nGoodbye, {userName}! Stay safe online.");
                     break;
                 }
 
-                // Process user input
                 GetResponse(userInput);
             }
         }
 
-        // GetResponse method
+        // Analyzes user input and gives the appropriate chatbot response
         static void GetResponse(string userInput)
         {
             userInput = userInput.ToLower();
 
-            // Detect user sentiment for empathetic response
             string sentiment = DetectSentiment(userInput);
+            HandleSentiment(sentiment); // Show a calming message if needed
 
-            if (sentiment == "concern")
-            {
-                TypeResponse("\nIt's completely understandable to feel that way. Cyber threats can be stressful, but I'm here to help you feel more secure.");
-            }
-            else if (sentiment == "curiosity")
-            {
-                TypeResponse("\nCuriosity is great! The more you learn about cybersecurity, the better prepared you'll be.");
-            }
-            else if (sentiment == "frustration")
-            {
-                TypeResponse("\nI get that this can be frustrating. Let’s take it one step at a time — I’m here to make it easier.");
-            }
+            if (CheckRepeatRequest(userInput)) return;
+            if (HandleGeneralQueries(userInput)) return;
+            if (HandleRandomTopic(userInput)) return;
 
-            // Memory and Follow-Up Check
-            if (userInput.Contains("remind") || userInput.Contains("what did you say") || userInput.Contains("repeat") || userInput.Contains("again"))
+            // Look through static responses
+            foreach (var topic in staticTopicResponses.Keys)
             {
-                if (!string.IsNullOrEmpty(lastTopic) && topicHistory.ContainsKey(lastTopic))
+                if (userInput.Contains(topic))
                 {
-                    TypeResponse($"\nSure! Here's what I said about {lastTopic}:");
-                    TypeResponse(topicHistory[lastTopic]);
+                    lastTopic = topic;
+                    string response = staticTopicResponses[topic];
+                    TypeResponse(response);
+                    topicHistory[topic] = response;
+                    return;
                 }
-                else
-                {
-                    TypeResponse("\nI can't recall a topic yet. Try asking me something first.");
-                }
-                return;
-            }
-            //predefined conversational responses
-            if (userInput.Contains("how are you"))
-            {
-                TypeResponse("\nI'm doing great, thank you! I'm always ready to help you stay safe online.");
-            }
-            else if (userInput.Contains("what's your purpose") || userInput.Contains("what is your purpose"))
-            {
-                TypeResponse("\nMy purpose is to educate and assist you with cybersecurity knowledge so you can protect yourself online.");
-            }
-            else if (userInput.Contains("what can i ask") || userInput.Contains("topics"))
-            {
-                TypeResponse("\nYou can ask about:");
-                TypeResponse("- Phishing");
-                TypeResponse("- Strong passwords");
-                TypeResponse("- Malware");
-                TypeResponse("- Safe browsing");
-                TypeResponse("- Common scams");
-                TypeResponse("- Social engineering");
-            }
-            // if user wants more phishing tips function
-            if (userInput.Contains("remind") || userInput.Contains("what did you say") || userInput.Contains("repeat") || userInput.Contains("again"))
-            {
-                if (!string.IsNullOrEmpty(lastTopic) && topicHistory.ContainsKey(lastTopic))
-                {
-                    TypeResponse($"\nSure! Here's what I said about {lastTopic}:");
-                    TypeResponse(topicHistory[lastTopic]);
-                }
-                else
-                {
-                    TypeResponse("\nI can't recall a topic yet. Try asking me something first.");
-                }
-                return;
             }
 
-            if (lastTopic == "phishing" && (userInput.Contains("more") || userInput.Contains("another tip")))
-            {
-                Random rand = new Random();
-                string newTip = phishingTips[rand.Next(phishingTips.Count)];
-                TypeResponse("\nHere's another phishing tip: " + newTip);
-                topicHistory["phishing"] = newTip;
-            }
-            else if (userInput.Contains("phishing"))
-            {
-                lastTopic = "phishing";
-                Random rand = new Random();
-                string tip = phishingTips[rand.Next(phishingTips.Count)];
-                TypeResponse("\n" + tip);
-                topicHistory["phishing"] = tip;
-            }
-            // Other topic responses
-            else if (userInput.Contains("strong password") || userInput.Contains("create password") || userInput.Contains("password"))
-            {
-                lastTopic = "password";
-                string msg = "\nMake sure to use strong, unique passwords for each account. Avoid using personal info like your birthday.";
-                TypeResponse(msg);
-                topicHistory["password"] = msg;
-            }
-            else if (userInput.Contains("malware"))
-            {
-                lastTopic = "malware";
-                string msg = "\nMalware is malicious software like viruses, spyware, or ransomware that can damage or steal your data.";
-                TypeResponse(msg);
-                topicHistory["malware"] = msg;
-            }
-            else if (userInput.Contains("safe browsing"))
-            {
-                lastTopic = "safe browsing";
-                string msg = "\nSafe browsing means avoiding unknown websites, not clicking suspicious links, and using secure connections.";
-                TypeResponse(msg);
-                topicHistory["safe browsing"] = msg;
-            }
-            else if (userInput.Contains("social engineering"))
-            {
-                lastTopic = "social engineering";
-                string msg = "\nSocial engineering is when someone tricks you into giving away confidential information by pretending to be someone you trust.";
-                TypeResponse(msg);
-                topicHistory["social engineering"] = msg;
-            }
-            else if (userInput.Contains("scam"))
-            {
-                lastTopic = "scam";
-                string msg = "\nWatch out for online scams. Never click on suspicious links or give out personal information to unverified sources.";
-                TypeResponse(msg);
-                topicHistory["scam"] = msg;
-            }
-            else if (userInput.Contains("privacy"))
-            {
-                lastTopic = "privacy";
-                string msg = "\nProtect your privacy by adjusting security settings on social media and apps. Only share personal information when absolutely necessary.";
-                TypeResponse(msg);
-                topicHistory["privacy"] = msg;
-            }
-            // Fallback for unrecognised input
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                TypeResponse("\nI'm not sure I understand. Can you try rephrasing or ask about a cybersecurity topic like phishing or malware?");
-                Console.ResetColor();
-            }
+            // If nothing matched, show a fallback message
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            TypeResponse("\nI'm not sure I understand. Can you try rephrasing or ask about a cybersecurity topic like phishing or malware?");
+            Console.ResetColor();
         }
-        // Detects basic sentiment in the user's message
+
+        // Detects the emotional tone of the user’s input
         static string DetectSentiment(string input)
         {
             input = input.ToLower();
 
-            if (input.Contains("worried") || input.Contains("scared") || input.Contains("nervous") || input.Contains("anxious") || input.Contains("concern") || input.Contains("concerned"))
+            if (input.Contains("worried") || input.Contains("scared") || input.Contains("nervous") || input.Contains("anxious") || input.Contains("concern"))
                 return "concern";
             else if (input.Contains("curious") || input.Contains("interested") || input.Contains("wondering"))
                 return "curiosity";
@@ -277,7 +174,94 @@ namespace CyberSecurityChat
             else
                 return "neutral";
         }
-        // Types out the chatbot's message with a typewriter effect
+
+        // Displays a supportive message based on detected sentiment
+        static void HandleSentiment(string sentiment)
+        {
+            switch (sentiment)
+            {
+                case "concern":
+                    TypeResponse("\nIt's completely understandable to feel that way. Cyber threats can be stressful, but I'm here to help you feel more secure.");
+                    break;
+                case "curiosity":
+                    TypeResponse("\nCuriosity is great! The more you learn about cybersecurity, the better prepared you'll be.");
+                    break;
+                case "frustration":
+                    TypeResponse("\nI get that this can be frustrating. Let’s take it one step at a time — I’m here to make it easier.");
+                    break;
+            }
+        }
+
+        // Checks if user wants the bot to repeat a previous topic
+        static bool CheckRepeatRequest(string input)
+        {
+            if (input.Contains("remind") || input.Contains("what did you say") || input.Contains("repeat") || input.Contains("again"))
+            {
+                if (!string.IsNullOrEmpty(lastTopic) && topicHistory.ContainsKey(lastTopic))
+                {
+                    TypeResponse($"\nSure! Here's what I said about {lastTopic}:");
+                    TypeResponse(topicHistory[lastTopic]);
+                }
+                else
+                {
+                    TypeResponse("\nI can't recall a topic yet. Try asking me something first.");
+                }
+                return true;
+            }
+            return false;
+        }
+
+        // Handles general chatbot questions like "how are you?" or "what can I ask?"
+        static bool HandleGeneralQueries(string input)
+        {
+            if (input.Contains("how are you"))
+            {
+                TypeResponse("\nI'm doing great, thank you! I'm always ready to help you stay safe online.");
+                return true;
+            }
+            else if (input.Contains("what's your purpose") || input.Contains("what is your purpose"))
+            {
+                TypeResponse("\nMy purpose is to educate and assist you with cybersecurity knowledge so you can protect yourself online.");
+                return true;
+            }
+            else if (input.Contains("what can i ask") || input.Contains("topics"))
+            {
+                TypeResponse("\nYou can ask about:\n- Phishing\n- Strong passwords\n- Malware\n- Safe browsing\n- Common scams\n- Social engineering");
+                return true;
+            }
+            return false;
+        }
+
+        // Handles responses for topics like "phishing" that have multiple tips
+        static bool HandleRandomTopic(string input)
+        {
+            if (lastTopic == "phishing" && (input.Contains("more") || input.Contains("another tip")))
+            {
+                string tip = GetRandomResponse("phishing");
+                TypeResponse("\nHere's another phishing tip: " + tip);
+                topicHistory["phishing"] = tip;
+                return true;
+            }
+            else if (input.Contains("phishing"))
+            {
+                lastTopic = "phishing";
+                string tip = GetRandomResponse("phishing");
+                TypeResponse("\n" + tip);
+                topicHistory["phishing"] = tip;
+                return true;
+            }
+            return false;
+        }
+
+        // Selects a random message from a list for a given topic
+        static string GetRandomResponse(string topic)
+        {
+            Random rand = new Random();
+            List<string> responses = randomTopicResponses[topic];
+            return responses[rand.Next(responses.Count)];
+        }
+
+        // Simulates typing the chatbot's response
         static void TypeResponse(string message, int delay = 25)
         {
             foreach (char c in message)
