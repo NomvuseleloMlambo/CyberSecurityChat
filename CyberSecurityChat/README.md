@@ -4,8 +4,8 @@
 
 # Project Overview
 
-CyberSecurityChat is a console-based C# chatbot designed to raise awareness about online safety and best practices in cybersecurity. The bot interacts with the user, answers cybersecurity-related questions, and offers emotional support when users express concern, curiosity, or frustration.
-
+CyberSecurityChat is a console-based C# chatbot designed to raise awareness about online safety and best practices in cybersecurity.
+The bot interacts with the user, answers cybersecurity-related questions, and offers emotional support when users express concern, curiosity, or frustration.
 It's ideal for educational environments, beginner chatbot developers, or as a base for more advanced conversational bots.
 
 # Features
@@ -26,7 +26,7 @@ It's ideal for educational environments, beginner chatbot developers, or as a ba
 # How to Run the Project
 
 1. Open the solution in Visual Studio or your preferred C# IDE.
-2. Add a **greeting.wav** sound file in a `Resources` folder within the project directory.
+2. Add the greeting.wav sound file in a `Resources` folder within the project directory. Ensure the content is set to copy if newer. (right-click on the wav file > properties > select copy if newer)
 3. Build and run the application.
 4. Interact with the bot via the terminal.
 
@@ -70,3 +70,12 @@ You can ask about:
 > exit
 
 Goodbye, Alex! Stay safe online. 
+
+
+# References 
+
+GeeksforGeeks, 2024. C# Programming Language. [online] Available at: https://www.geeksforgeeks.org/csharp-programming-language/ [Accessed 18 May 2025].
+Microsoft Learn, 2024. Dictionary<TKey,TValue> Class (System.Collections.Generic). [online] Available at: https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.dictionary-2 [Accessed 20 May 2025].
+Stack Overflow, 2024. Declare a dictionary inside a static class. [online]. Available at: https://stackoverflow.com/questions/313324/declare-a-dictionary-inside-a-static-class [Accessed 20 May 2025].
+W3Schools, 2024. C# Dictionaries. [online] Available at: https://www.w3schools.com/cs/cs_dictionaries.php [Accessed 20 May 2025].
+
